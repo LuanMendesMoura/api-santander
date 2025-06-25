@@ -16,6 +16,20 @@ class UsuarioRepository extends ServiceEntityRepository
         parent::__construct($registry, Usuario::class);
     }
 
+    /** 
+    * @return Usuario[] Retorna um objeto de Usuario ou nulo se nao existir
+    */
+    public function findByCpf($cpf): Usuario|null
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.cpf = :cpf')
+            ->setParameter('cpf', $cpf)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
+
     //    /**
     //     * @return Usuario[] Returns an array of Usuario objects
     //     */
