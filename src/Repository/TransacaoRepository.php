@@ -19,21 +19,11 @@ class TransacaoRepository extends ServiceEntityRepository
     //    /**
     //     * @return Transacao[] Returns an array of Transacao objects
     //     */
-    public function findByUsuarioDestino($usuarioDestino): ?Transacao
+    public function findByTransacao($usuarioDestino): ?Transacao
     {
         return $this->createQueryBuilder('t')
             ->andWhere('t. = :usuarioDestino')
             ->setParameter('usuarioDestino', $usuarioDestino)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-
-    public function findByUsuarioOrigem($usuarioOrigem): ?Transacao
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.contaOrigem = :usuarioOrigem')
-            ->setParameter('usuarioOrigem', $usuarioOrigem)
             ->getQuery()
             ->getOneOrNullResult()
         ;

@@ -18,7 +18,7 @@ class Conta
     private ?int $numero = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2)]
-    private ?string $saldo = "1000";
+    private ?string $saldo = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]

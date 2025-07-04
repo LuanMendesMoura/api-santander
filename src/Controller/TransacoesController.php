@@ -3,9 +3,15 @@
 namespace App\Controller;
 
 use App\Dto\TransacaoRealizarDto;
+use App\Entity\Conta;
+use App\Entity\Transacao;
 use App\Repository\ContaRepository;
+use DateTime;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -18,7 +24,8 @@ final class TransacoesController extends AbstractController
         TransacaoRealizarDto $entrada,
 
         ContaRepository $contaRepository,
-    ): JsonResponse
+        EntityManagerInterface $entityManager 
+    ): Response
     {
         $erros = [];
         // validar os dados do DTO de entrada
@@ -71,14 +78,36 @@ final class TransacoesController extends AbstractController
         }
 
         // validar se a origem tem saldo suficiente
-        $saldoContaOrigem = (float)$contaOrigem->getSaldo();
+        $saldo = (float)$contaOrigem->getSaldo();
         $transacaoValor = (float)$entrada->getValor();
-        if (($saldoContaOrigem - $transacaoValor) >= 0){
+
+        if ($saldo < $transacaoValor){
             return $this->json([
                 'message' => 'Saldo insuficiente'
             ], 404);
         } 
+
+        // realizar a transacao e salvar no banco 
+        $saldoDestino = (float)$contaDestino->getSaldo();
+
+        $contaOrigem->setSaldo($saldo - $transacaoValor);
+        $entityManager->persist($contaOrigem);
+
+        $contaDestino->setSaldo($saldoDestino + $transacaoValor);
+        $entityManager->persist($contaDestino);
+
+        $transacao = new Transacao();
+        $transacao->setDataHora(new DateTime());
+        $transacao->setValor($entrada->getValor());
+        $transacao->setContaOrigem($contaOrigem);
+        $transacao->setContaDestino($contaDestino);
+        $entityManager->persist($transacao);
+
+        $entityManager->flush();
+
+        return new Response(status: 204);
         
+
         dd($erros);
     }
 }
